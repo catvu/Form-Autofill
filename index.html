@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+        integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
+          integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n"
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
+          integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+          crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+          integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+          crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/vue"></script>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <title>Document</title>
+  <style>
+    h1, h2, h3, h4, h5 {
+      font-weight: normal;
+    }
+
+    .nav-link:not(.active) {
+      color: #aaa;
+    }
+
+    .tab-pane {
+      padding: 15px;
+    }
+
+    .form-control-xs {
+      background: white;
+      height: 25px;
+    }
+
+    label {
+      margin-bottom: 0px;
+    }
+
+    body {
+      font-size: 14px;
+    }
+
+    tbody td {
+      padding-bottom: 10px;
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+<div class="container" id="home">
+  <h3 style="margin-bottom: 10px; margin-top:30px"><span class="fa fa-file-text-o"></span> Form Autofill</h3>
+  <i style="font-size: medium">Online tool for quickly form filling. No installation required.</i>
+  <br><br>
+  <section>
+    <h5>1. Add form fields</h5>
+    <p>Add your fields here. They should be in the correct order (from left to right, top to bottom).</p>
+    <ul class="nav nav-tabs" role="tablist">
+      <li v-for="(t, index) in tabs" class="nav-item">
+        <a class="nav-link" :class="{active: index === activeTab}" data-toggle="tab" :href="`#tab-${index}`" role="tab">
+          Tab {{index + 1}}
+          <span role="button" @click.prevent="removeTab(index)" class="fa fa-close"
+                style="font-size: smaller; color:#aaa"></span>
+        </a>
+      </li>
+      <li>
+        <a @click.prevent="newTab" href class="fa fa-plus"
+           style="display: inline-block;padding-top: 12px;padding-left: 10px;"></a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div v-for="(t, idx) in tabs" :class="{active: idx === activeTab}" class="tab-pane" :id="`tab-${idx}`"
+           role="tabpanel">
+        <div>
+          <div class="row">
+            <div class="col-md-9">
+
+              <table>
+                <thead>
+                <tr>
+                  <th class="text-center" style="width: 30px; padding-right: 20px;">No</th>
+                  <th style="width: 172px">Title (optional)</th>
+                  <th style="width: 100px">Type</th>
+                  <th style="width: 200px">Value</th>
+                  <th style="width: 80px">Skip?</th>
+                  <th style="width: 200px">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(f, index) in t.fields">
+                  <td class="text-center" style="padding-right: 20px;">{{index + 1}}</td>
+                  <td>
+                    <input type="text" class="form-control-xs" v-model="f.note" placeholder="(just for note)">
+                  </td>
+                  <td>
+                    <select class="form-control-xs" v-model="f.type" @change="clearSelected(f)">
+                      <option value="text">Text</option>
+                      <option value="select">Select</option>
+                      <option value="radio">Radio</option>
+                      <option value="checkbox">Checkbox</option>
+                    </select>
+                  </td>
+                  <td>
+                    <input v-if="f.type !== 'checkbox' && f.type !== 'radio'" type="text" class="form-control-xs"
+                           v-model="f.value">
+                    <div v-if="f.type == 'checkbox' || f.type == 'radio'">
+                      <label role="button"><input type="radio" v-model="f.value" :value="true"> Yes</label> &nbsp;
+                      &nbsp;
+                      <label role="button"><input type="radio" v-model="f.value" :value="false"> No</label>
+                    </div>
+                  </td>
+                  <td>
+                    <label role="button">
+                      <input type="checkbox" v-model="f.skip"> yes
+                    </label>
+                  </td>
+                  <td>
+                    <a href @click.prevent="remove(index,t.fields)">Delete</a> |
+                    <a href @click.prevent="move(index-1,t.fields)">Up</a> |
+                    <a href @click.prevent="move(index,t.fields)">Down</a>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+              <a href style="color:black; margin-left:5px" @click.prevent="addField(t.fields)">
+                <span class="fa fa-plus-circle text-success"></span> Add field
+              </a>
+            </div>
+            <div class="col-md-3" style="padding-right: 0px">
+              <p>
+                <b>Container: </b>
+                <input type="text" v-model="t.container">
+              </p>
+              <p>
+                You can use this script to inspect select options in your form:<br>
+                <span style="font-family: monospace;color: rgb(244, 67, 54);font-size: smaller;">
+                  $('select').toArray().map(s => $('option[value]',s).toArray().map(o => `(${$(o).val()},${$(o).text()})`))
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+  </section>
+  <section>
+    <h5>2. Get codes</h5>
+    <button @click="generateCodes" class="btn btn-sm btn-danger" role="button">Generate Scripts</button>
+    &nbsp;
+    <span id="copied" style="display: none">Copied!</span>
+    <textarea style="display: none" :value="codes" id="generated_codes"></textarea>
+    <br> <br>
+  </section>
+  <section>
+    <h5>3. Save codes to your browser</h5>
+    <p style="line-height: 30px">
+      Go to the form page <br>
+      Open Console Tab (<b>F12</b> > <b>Console</b>) <br>
+      Press <b>Ctrl + V</b> to paste copied scripts and <b>Enter</b><br>
+      Reload the page
+    </p>
+  </section>
+  <section>
+    <h5>4. Autofill</h5>
+    Now you can use the following script to fill in the <b>nth</b> (1, 2, ...) tab: <br>
+    <p style="font-family: monospace;color: #F44336;font-size: medium;">
+      (new Function(localStorage.autofill))(); window.autofill(<b>1</b>) <br>
+    </p>
+  </section>
+  <div style="margin-bottom: 100px"></div>
+</div>
+<script>
+  new Vue({
+    el: '#home',
+    data () {
+      return {
+        tabs: [
+          {
+            fields: [
+              {
+                type: 'text',
+                note: '',
+                value: null,
+                skip: false
+              }
+            ]
+          }
+        ],
+        activeTab: 0,
+        codes: '',
+        copied: false,
+      }
+    },
+    methods: {
+      newTab() {
+        this.tabs.push(
+          {
+            container: 'form',
+            fields: [
+              {
+                type: 'text',
+                note: '',
+                value: null,
+                skip: false
+              }
+            ]
+          }
+        );
+        this.$nextTick(function () {
+          $(`.nav-item:nth-child(${this.tabs.length}) .nav-link`).click();
+        })
+      },
+      removeTab(index) {
+        const res = confirm('Are you sure you want to delete it?');
+        if (res) this.tabs.splice(index, 1);
+      },
+      addField (fields) {
+        fields.push({
+          type: 'text',
+          note: '',
+          value: '',
+          skip: false
+        })
+      },
+      clearSelected(f) {
+        f.value = (f.type === 'checkbox' || f.type === 'radio') ? false : '';
+      },
+      remove (index, fields) {
+        const res = confirm('Are you sure you want to delete it?');
+        if (res) fields.splice(index, 1);
+      },
+      move (left, fields) {
+        if (left < 0 || left + 1 > fields.length - 1) return;
+        fields.splice(left, 2, fields[left + 1], fields[left]);
+      },
+      generateAutofill() {
+        let str = `window.autofillContainers = ${JSON.stringify(this.tabs.map(t => t.container))};`;
+        str += `window.autofillData = ${JSON.stringify(this.tabs.map(t => t.fields))}; window.autofill = `;
+        str += function (idx) {
+          idx -= 1;
+          const container = window.autofillContainers[idx];
+          const fields = window.autofillData[idx];
+          if (!fields) return;
+          let nth_text = 0;
+          let nth_select = 0;
+          let nth_checkbox = 0;
+          let nth_radio = 0;
+
+          fields.forEach(f => {
+            if (f.type === 'text') fillText(f, nth_text++);
+            else if (f.type === 'select') fillSelect(f, nth_select++);
+            else if (f.type === 'checkbox') fillCheckbox(f, nth_checkbox++);
+            else if (f.type === 'radio') fillRadio(f, nth_radio++);
+          });
+
+          function fillText(f, nth) {
+            if (f.skip) return;
+            const selector = container + ' input[type="text"][name], ' +
+              container + ' input[type="email"][name], ' +
+              container + ' input[type="password"][name]';
+            $($(selector)[nth]).val(f.value).trigger('change');
+          }
+
+          function fillSelect(f, nth) {
+            if (f.skip) return;
+            $($(container + ' select')[nth]).val(f.value).trigger('change');
+          }
+
+          function fillCheckbox(f, nth) {
+            if (f.skip || !f.value) return;
+            const selector = container + ' input[type="checkbox"]';
+            $($(selector)[nth]).trigger('click');
+            $($(selector)[nth]).parent().trigger('click');
+          }
+
+          function fillRadio(f, nth) {
+            if (f.skip || !f.value) return;
+            const selector = container + ' input[type="radio"]';
+            $($(selector)[nth]).trigger('click');
+            $($(selector)[nth]).parent().trigger('click');
+          }
+        };
+        return str.replace(/\n/g, ' ').replace(/\s\s+/g, ' ');
+      },
+      generateCodes() {
+        localStorage.autofillTabs = JSON.stringify(this.tabs);
+        this.codes = 'localStorage.autofill = `' + this.generateAutofill() + '`';
+        this.copyToClipboard();
+      },
+      copyToClipboard() {
+        var aux = document.createElement("input");
+        aux.setAttribute("value", this.codes);
+        document.body.appendChild(aux);
+        aux.select();
+        document.execCommand("copy");
+        document.body.removeChild(aux);
+        $('#copied').show();
+        setTimeout(function () {
+          $('#copied').hide();
+        }, 1000)
+      }
+    },
+    mounted () {
+      if (localStorage.autofillTabs) {
+        this.tabs = JSON.parse(localStorage.autofillTabs);
+      }
+    }
+  });
+</script>
+</body>
+</html>
