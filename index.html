@@ -156,9 +156,7 @@
   <section>
     <h5>2. Get codes</h5>
     <button @click="generateCodes" class="btn btn-sm btn-danger" role="button">Generate Scripts</button>
-    &nbsp;
     <span id="copied" style="display: none">Copied!</span>
-    <textarea style="display: none" :value="codes" id="generated_codes"></textarea>
     <br> <br>
   </section>
   <section>
@@ -176,6 +174,12 @@
     <p style="font-family: monospace;color: #F44336;font-size: medium;">
       (new Function(localStorage.autofill))(); window.autofill(<b>1</b>) <br>
     </p>
+  </section>
+  <section>
+    <h5>Export Settings</h5>
+    <p>Run copied code in console tab of <b>this page</b> then reload it.</p>
+    <button @click="exportSettings" class="btn btn-sm btn-danger" role="button">Export Settings</button>
+    <span id="copiedSettings" style="display: none">Copied!</span>
   </section>
   <div style="margin-bottom: 100px"></div>
 </div>
@@ -297,6 +301,18 @@
         localStorage.autofillTabs = JSON.stringify(this.tabs);
         this.codes = 'localStorage.autofill = `' + this.generateAutofill() + '`';
         this.copyToClipboard();
+      },
+      exportSettings () {
+        var aux = document.createElement("input");
+        aux.setAttribute("value", `localStorage.autofillTabs = '${JSON.stringify(this.tabs)}'`);
+        document.body.appendChild(aux);
+        aux.select();
+        document.execCommand("copy");
+        document.body.removeChild(aux);
+        $('#copiedSettings').show();
+        setTimeout(function () {
+          $('#copiedSettings').hide();
+        }, 1000)
       },
       copyToClipboard() {
         var aux = document.createElement("input");
